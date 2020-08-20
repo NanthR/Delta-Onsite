@@ -1,0 +1,26 @@
+<html>
+	<head>
+		<title>Login</title>
+	</head>
+	<body>
+		{% with messages = get_flashed_messages() %}
+			{% if messages %}
+				{% for message in messages %}
+					<p>{{ message }}</p>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+		<form action="" method="post">
+			<fieldset>
+				<legend>Login</legend>
+				<div>
+					{{ form.hidden_tag }}
+					{{ form.username.label}} {{ form.username }}<br>
+					{{ form.password.label}} {{ form.password }}<br>
+					{{ form.remember.label }} {{ form.remember }}<br>
+					{{ form.submit }}  <a href = "{{ url_for('reset') }}">Forgot Password</a>
+				</div>
+			</fieldset>
+		</form>
+	</body>
+</html>
