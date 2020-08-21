@@ -225,10 +225,19 @@ def round_key(s, k):
 # PKCS#7 padding
 def pad(plaintext):
     padding_length = 16 - len(plaintext)%16
-    return plaintext + bytes([padding_length]*padding_length)
+    try:
+        return plaintext.encode() + bytes([padding_length]*padding_length)
+    except:
+        return plaintext + bytes([padding_length]*padding_length)
+
+
+def unpad(plaintext):
+    padding_length = plaintext[-1]
+    assert all(i == padding_length for i in plaintext[-padding_length:])
+    return plaintext[:-padding_length]
 
 def split_block(data, length=16):
-    assert len(data) % length == 16
+    assert len(data) % length == 0
     return [data[i:i+length] for i in range(0,len(data),length)]
 
 class AES:
@@ -299,7 +308,26 @@ class AES:
 
         return to_bytes(state)
 
-    def encrypt_cbc(self, plaintext, iv):
+    def encrypt_ecb(self, plaintext):
+        plaintext = pad(plaintext)
+
+        result = []
+
+        for i in split_block(plaintext):
+            result.append(self.encrypt(i))
+
+        return b''.join(result)
+
+    def decrypt_ecb(self, ciphertext):
+
+        result = []
+        for i in split_block(ciphertext):
+            result.append(self.decrypt(i))
+
+        return unpad(b''.join(result))
+
+
+    def encrypt_cbc(self, plaintext, iv=os.urandom(16)):
         print(f"This is the initial vector provided: {iv}\nKindly remember this for future decryptions")
         plaintext = pad(plaintext)
 
@@ -319,4 +347,7 @@ class AES:
             result.append(xor_bytes(s, iv))
             iv = i
 
-        return b''.join(result)
+        return unpad(b''.join(result))
+
+
+
